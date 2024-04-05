@@ -1,0 +1,28 @@
+<launch>
+
+  <node pkg="tf" type="static_transform_publisher" name="odom_to_map" args="0 0 0 0 0 0  /map /odom 100" />
+
+  <param name="use_sim_time" value="true" />
+
+  <node name="stage" pkg="stage_ros" type="stageros" args="$(find cartographer_ros)/world/robot.world" ns="/" output="log">
+      <remap from="base_scan" to="scan"/>
+      <!--remap from="base_laser_link" to="laser_link"/-->
+  </node>
+
+  <param name="/use_sim_time" value="true" />
+
+  <node name="cartographer_node" pkg="cartographer_ros"
+      type="cartographer_node" args="
+          -configuration_directory $(find cartographer_ros)/configuration_files
+          -configuration_basename revo_lds.lua"
+      output="screen">
+    <!--remap from="scan" to="horizontal_laser_2d" /-->
+  </node>
+
+  <node name="cartographer_occupancy_grid_node" pkg="cartographer_ros"
+      type="cartographer_occupancy_grid_node" args="-resolution 0.05" />
+
+  <node name="rviz_carto" pkg="rviz" type="rviz" required="true"
+    args="-d $(find cartographer_ros)/configuration_files/demo_2d.rviz" />
+
+</launch>
